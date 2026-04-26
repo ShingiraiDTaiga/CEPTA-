@@ -1,0 +1,32 @@
+name: CEPTA Minimal Engine
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  run-cepta:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run CEPTA
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          python engine/main.py
+
+      - name: Commit state
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add state/cepta.state.json
+          git commit -m "CEPTA state update" || exit 0
+          git push
